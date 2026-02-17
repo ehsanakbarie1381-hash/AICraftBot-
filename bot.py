@@ -1,5 +1,5 @@
 import telebot
-import google.generativeai as genai
+from google import genai
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from collections import defaultdict
 import logging
@@ -8,25 +8,26 @@ from datetime import datetime
 import os
 
 # ===== تنظیمات اصلی =====
+# ⚠️ این توکن قدیمیه - باید با توکن جدید از BotFather عوض بشه
 TELEGRAM_TOKEN = "8509129354:AAHC7Xp0vzVTlrms2miMNzX5J7e27TwNSdw"
 GEMINI_API_KEY = "AIzaSyBiTaCebOc7SMxSI23fv0376Tt1F-owseA"
 
 # ===== تنظیمات کانال =====
 CHANNEL_USERNAME = "@AICraft_ir"
 CHANNEL_LINK = "https://t.me/AICraft_ir"
-FREE_QUESTIONS = 10  # تعداد سوال رایگان
-CHECK_PERIOD = 24 * 3600  # ۲۴ ساعت
+FREE_QUESTIONS = 10
+CHECK_PERIOD = 24 * 3600
 
 # ===== لاگ‌گیری =====
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # asime -> asctime
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# ===== راه‌اندازی هوش مصنوعی =====
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-pro')
+# ===== راه‌اندازی هوش مصنوعی (نسخه جدید google-genai) =====
+client = genai.Client(api_key=GEMINI_API_KEY)
+model = 'gemini-pro'  # اسم مدل برای استفاده بعدی
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
 # ===== ذخیره سوالات کاربران =====
@@ -34,7 +35,6 @@ user_questions = defaultdict(list)
 
 # ===== توابع کمکی =====
 def is_member(user_id):
-    """بررسی عضویت کاربر در کانال"""
     try:
         member = bot.get_chat_member(CHANNEL_USERNAME, user_id)
         return member.status in ['member', 'administrator', 'creator']
@@ -43,39 +43,33 @@ def is_member(user_id):
         return False
 
 def check_question_limit(user_id):
-    """بررسی محدودیت سوال"""
     now = time.time()
-    # پاک کردن سوالات قدیمی
     user_questions[user_id] = [t for t in user_questions[user_id] if now - t < CHECK_PERIOD]
-    
     asked = len(user_questions[user_id])
     
-    # اگه عضو کانال باشه، محدودیت نداره
     if is_member(user_id):
         return True, 0, asked
     
-    # اگه عضو نباشه، فقط FREE_QUESTIONS تا سوال داره
     if asked >= FREE_QUESTIONS:
         return False, FREE_QUESTIONS - asked, asked
     
     return True, FREE_QUESTIONS - asked, asked
 
 def record_question(user_id):
-    """ثبت سوال جدید"""
     user_questions[user_id].append(time.time())
 
-# ===== منوی اصلی با آیکون‌های شیشه‌ای =====
+# ===== منوی اصلی =====
 def main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     buttons = [
-        KeyboardButton("✍️ **تولید متن**"),
-        KeyboardButton("📄 **خلاصه‌سازی**"),
-        KeyboardButton("🌐 **ترجمه**"),
-        KeyboardButton("💡 **ایده‌پردازی**"),
-        KeyboardButton("❓ **پرسش**"),
-        KeyboardButton("📊 **آمار من**"),
-        KeyboardButton("💎 **درباره ما**"),
-        KeyboardButton("⚙️ **تنظیمات**")
+        KeyboardButton("✍️ تولید متن"),
+        KeyboardButton("📄 خلاصه‌سازی"),
+        KeyboardButton("🌐 ترجمه"),
+        KeyboardButton("💡 ایده‌پردازی"),
+        KeyboardButton("❓ پرسش"),
+        KeyboardButton("📊 آمار من"),
+        KeyboardButton("💎 درباره ما"),
+        KeyboardButton("⚙️ تنظیمات")
     ]
     markup.add(*buttons)
     return markup
@@ -105,7 +99,7 @@ def start(message):
     bot.reply_to(message, welcome_text, parse_mode="Markdown", reply_markup=main_menu())
 
 # ===== درباره ما =====
-@bot.message_handler(func=lambda m: m.text == "💎 **درباره ما**")
+@bot.message_handler(func=lambda m: m.text == "💎 درباره ما")
 def about(message):
     text = """
 🤖 **AICraft**
@@ -128,7 +122,7 @@ def about(message):
     bot.reply_to(message, text, parse_mode="Markdown", reply_markup=main_menu())
 
 # ===== آمار کاربر =====
-@bot.message_handler(func=lambda m: m.text == "📊 **آمار من**")
+@bot.message_handler(func=lambda m: m.text == "📊 آمار من")
 def my_stats(message):
     user_id = message.from_user.id
     asked = len([t for t in user_questions[user_id] if time.time() - t < CHECK_PERIOD])
@@ -152,7 +146,7 @@ def my_stats(message):
     bot.reply_to(message, text, parse_mode="Markdown", reply_markup=main_menu())
 
 # ===== تنظیمات =====
-@bot.message_handler(func=lambda m: m.text == "⚙️ **تنظیمات**")
+@bot.message_handler(func=lambda m: m.text == "⚙️ تنظیمات")
 def settings(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
@@ -168,14 +162,14 @@ def back_to_main(message):
     bot.reply_to(message, "🔙 بازگشت به منوی اصلی", reply_markup=main_menu())
 
 # ===== راهنمای دکمه‌ها =====
-@bot.message_handler(func=lambda m: m.text in ["✍️ **تولید متن**", "📄 **خلاصه‌سازی**", "🌐 **ترجمه**", "💡 **ایده‌پردازی**", "❓ **پرسش**"])
+@bot.message_handler(func=lambda m: m.text in ["✍️ تولید متن", "📄 خلاصه‌سازی", "🌐 ترجمه", "💡 ایده‌پردازی", "❓ پرسش"])
 def guide(message):
     guides = {
-        "✍️ **تولید متن**": "📝 **موضوع متن رو بنویس:**",
-        "📄 **خلاصه‌سازی**": "📄 **متن یا لینک رو بفرست:**",
-        "🌐 **ترجمه**": "🌍 **متن رو بفرست:**",
-        "💡 **ایده‌پردازی**": "💭 **موضوع ایده رو بگو:**",
-        "❓ **پرسش**": "❓ **سوالت رو بپرس:**"
+        "✍️ تولید متن": "📝 **موضوع متن رو بنویس:**",
+        "📄 خلاصه‌سازی": "📄 **متن یا لینک رو بفرست:**",
+        "🌐 ترجمه": "🌍 **متن رو بفرست:**",
+        "💡 ایده‌پردازی": "💭 **موضوع ایده رو بگو:**",
+        "❓ پرسش": "❓ **سوالت رو بپرس:**"
     }
     bot.reply_to(message, guides[message.text], parse_mode="Markdown")
 
@@ -184,7 +178,6 @@ def guide(message):
 def handle(message):
     user_id = message.from_user.id
     
-    # بررسی محدودیت
     can_ask, remaining, asked = check_question_limit(user_id)
     
     if not can_ask:
@@ -205,15 +198,16 @@ def handle(message):
     
     try:
         bot.send_chat_action(message.chat.id, 'typing')
-        
-        # ثبت سوال
         record_question(user_id)
         
-        # ارسال به هوش مصنوعی
         prompt = f"تو دستیار AICraft هستی. صمیمی و خلاقانه به فارسی پاسخ بده. کاربر: {message.text}"
-        response = model.generate_content(prompt)
         
-        # پیام باقی‌مونده
+        # نسخه جدید Google GenAI
+        response = client.models.generate_content(
+            model='gemini-pro',
+            contents=prompt
+        )
+        
         if not is_member(user_id):
             remaining_msg = f"\n\n⏳ {remaining} سوال رایگان باقی مونده.\n🔔 {CHANNEL_LINK}"
         else:
@@ -225,7 +219,7 @@ def handle(message):
         logger.error(f"خطا: {e}")
         bot.reply_to(message, "⚠️ **خطا! دوباره تلاش کن.**", parse_mode="Markdown", reply_markup=main_menu())
 
-# ===== بررسی عضویت پس از کلیک دکمه =====
+# ===== بررسی عضویت =====
 @bot.callback_query_handler(func=lambda call: call.data == "check_membership")
 def check_membership(call):
     user_id = call.from_user.id
