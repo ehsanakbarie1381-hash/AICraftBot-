@@ -9,7 +9,7 @@ import os
 
 # ===== تنظیمات اصلی =====
 # ⚠️ این توکن قدیمیه - باید با توکن جدید از BotFather عوض بشه
-TELEGRAM_TOKEN = "8509129354:AAHC7Xp0vzVTlrms2miMNzX5J7e27TwNSdw"
+TELEGRAM_TOKEN = "8509129354:AAEzG_0bvTQnZ4S3w3LPZ4DIfAiQDVjp5MU"
 GEMINI_API_KEY = "AIzaSyBiTaCebOc7SMxSI23fv0376Tt1F-owseA"
 
 # ===== تنظیمات کانال =====
