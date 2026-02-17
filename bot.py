@@ -1,4 +1,3 @@
-
 import telebot
 import google.generativeai as genai
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
