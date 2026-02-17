@@ -19,7 +19,7 @@ CHECK_PERIOD = 24 * 3600  # ۲۴ ساعت
 
 # ===== لاگ‌گیری =====
 logging.basicConfig(
-    format='%(asime)s - %(name)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
