@@ -1,5 +1,5 @@
 
-    import telebot
+import telebot
 import google.generativeai as genai
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from collections import defaultdict
