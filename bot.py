@@ -11,7 +11,7 @@ import http.server
 import socketserver
 
 # ===== تنظیمات اصلی =====
-TELEGRAM_TOKEN = "8509129354:AAEzG_0bvTQnZ4S3w3LPZ4DIfAiQDVjp5MU"
+TELEGRAM_TOKEN = "8509129354:AAH9H4ZHeWHcz7_ewqwNtD3FRZeQuncN-oQ"
 GEMINI_API_KEY = "AIzaSyBiTaCebOc7SMxSI23fv0376Tt1F-owseA"
 
 # ===== تنظیمات کانال =====
