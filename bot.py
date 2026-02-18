@@ -6,9 +6,11 @@ import logging
 import time
 from datetime import datetime
 import os
+import threading
+import http.server
+import socketserver
 
 # ===== تنظیمات اصلی =====
-# ⚠️ این توکن قدیمیه - باید با توکن جدید از BotFather عوض بشه
 TELEGRAM_TOKEN = "8509129354:AAEzG_0bvTQnZ4S3w3LPZ4DIfAiQDVjp5MU"
 GEMINI_API_KEY = "AIzaSyBiTaCebOc7SMxSI23fv0376Tt1F-owseA"
 
@@ -20,14 +22,14 @@ CHECK_PERIOD = 24 * 3600
 
 # ===== لاگ‌گیری =====
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # asime -> asctime
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# ===== راه‌اندازی هوش مصنوعی (نسخه جدید google-genai) =====
+# ===== راه‌اندازی هوش مصنوعی =====
 client = genai.Client(api_key=GEMINI_API_KEY)
-model = 'gemini-pro'  # اسم مدل برای استفاده بعدی
+model = 'gemini-pro'
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
 # ===== ذخیره سوالات کاربران =====
@@ -202,7 +204,6 @@ def handle(message):
         
         prompt = f"تو دستیار AICraft هستی. صمیمی و خلاقانه به فارسی پاسخ بده. کاربر: {message.text}"
         
-        # نسخه جدید Google GenAI
         response = client.models.generate_content(
             model='gemini-pro',
             contents=prompt
@@ -238,7 +239,28 @@ def check_membership(call):
             show_alert=True
         )
 
-# ===== اجرای ربات =====
+# ===== توابع اجرایی برای Render =====
+def run_bot():
+    """اجرای اصلی ربات"""
+    bot.infinity_polling()
+
+def run_dummy_server():
+    """سرور فیک برای راضی کردن Render"""
+    PORT = int(os.environ.get("PORT", 8080))
+    handler = http.server.SimpleHTTPRequestHandler
+    
+    class SilentHandler(handler):
+        def log_message(self, format, *args):
+            pass  # خاموش کردن لاگ‌های اضافی
+    
+    try:
+        with socketserver.TCPServer(("", PORT), SilentHandler) as httpd:
+            print(f"✅ Dummy server running on port {PORT} (for Render)")
+            httpd.serve_forever()
+    except Exception as e:
+        print(f"⚠️ Dummy server error: {e}")
+
+# ===== اجرای اصلی =====
 if __name__ == "__main__":
     print("="*50)
     print("🤖 **AICraft Bot - نسخه نهایی ۳.۰**")
@@ -251,4 +273,12 @@ if __name__ == "__main__":
     print("🚀 منتظر پیام‌ها...")
     print("="*50)
     
-    bot.infinity_polling()
+    # اجرای همزمان ربات و سرور فیک
+    bot_thread = threading.Thread(target=run_bot)
+    server_thread = threading.Thread(target=run_dummy_server)
+    
+    bot_thread.start()
+    server_thread.start()
+    
+    bot_thread.join()
+    server_thread.join()
