@@ -9,8 +9,8 @@ import google.generativeai as genai
 
 logging.basicConfig(level=logging.INFO)
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+TELEGRAM_BOT_TOKEN = os.getenv("8509129354:AAEGYDdGAbO0IypinF8wW5YtWZWl4OXaWIM")
+GEMINI_API_KEY = os.getenv("AIzaSyBiTaCebOc7SMxSI23fv0376Tt1F-owseA")
 CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME")  # مثل: @AICraftChannel
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 
