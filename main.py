@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 TELEGRAM_BOT_TOKEN = os.getenv("8509129354:AAEGYDdGAbO0IypinF8wW5YtWZWl4OXaWIM")
 GEMINI_API_KEY = os.getenv("AIzaSyBiTaCebOc7SMxSI23fv0376Tt1F-owseA")
-CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME")  # مثل: @AICraftChannel
+CHANNEL_USERNAME = os.getenv("@AICraft-ir")  
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 
 WELCOME_STICKER_ID = os.getenv("WELCOME_STICKER_ID", "")
